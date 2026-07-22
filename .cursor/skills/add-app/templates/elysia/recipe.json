@@ -1,0 +1,5 @@
+{
+  "stack": "elysia",
+  "description": "Elysia on Bun — minimal overlay; AI installs elysia@latest then pins catalog",
+  "scaffold": null
+}

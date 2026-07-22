@@ -1,0 +1,16 @@
+{
+  "name": "@t42/__APP_SLUG__",
+  "version": "0.0.0",
+  "private": true,
+  "scripts": {
+    "test:e2e": "playwright test",
+    "test:ui": "playwright test --ui",
+    "typecheck": "tsc --noEmit",
+    "lint": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "@t42/tsconfig": "workspace:*",
+    "@playwright/test": "catalog:",
+    "typescript": "catalog:"
+  }
+}

@@ -1,0 +1,22 @@
+{
+  "name": "@t42/__APP_SLUG__",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "bun --watch src/index.ts",
+    "start": "bun src/index.ts",
+    "typecheck": "tsc --noEmit",
+    "lint": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@t42/validators": "workspace:*",
+    "elysia": "catalog:",
+    "zod": "catalog:"
+  },
+  "devDependencies": {
+    "@t42/tsconfig": "workspace:*",
+    "@types/bun": "catalog:",
+    "typescript": "catalog:"
+  }
+}

@@ -1,0 +1,29 @@
+---
+description: 修改規格前必須啟動 write-spec skill，並以現狀寫法撰寫
+globs: docs/specification/**
+alwaysApply: false
+---
+
+# Spec-first Gate
+
+在修改 `docs/specification/` 底下任何規格、design、wireframe 索引之前，必須先啟動 [`write-spec`](../../.cursor/skills/write-spec/SKILL.md) skill 並依其流程執行。不得跳過 skill 直接改 markdown。
+
+## 回覆前置檢查（必做）
+
+- 這次變更屬於哪個 app／feature？
+- 該 app 目前**成熟度**（`exploration`／`converging`／`stable`）？
+- 改動是 L0–L2（含 UI）還是 L3–L5？若動 UI，同一回合是否需同步 wireframe（見 write-spec §3b → [`wireframe`](../../.cursor/skills/wireframe/SKILL.md)）？
+- 正文是否只描述**現行行為**（非 changelog）？
+
+## 撰寫約束
+
+- 規格描述**現狀**；禁止在正文累積「廢止 X → 改為 Y」「原 Z」等歷史對照。歷史由 git 保留。
+- 未定案標 `> **狀態：提議中**`；使用者確認後改 `已確認`——狀態標記不是變更紀錄。
+- 已移除的 feature／元件：刪除章節與對應 wireframe，不留「已廢止」tombstone。
+- 收斂期若發現 spec 像變更日誌：同一回合清稿為純現行描述。
+- 寫完 markdown 後依 write-spec §3b 判斷並同步 wireframe；禁止只改 `.md` 而把 wireframe 留給使用者。
+
+## 與實作的關係
+
+- 規格與 `apps/` 衝突時，先與使用者確認以哪邊為準，再修正 spec 或 code——不可默默雙軌漂移。
+- 改 spec 後若影響已實作行為，在回報中註明是否需跟進 `apps/` 或僅為清稿對齊。

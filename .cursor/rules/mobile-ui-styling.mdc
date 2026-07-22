@@ -1,0 +1,83 @@
+---
+description: t42-starter Expo app UI styling (token → primitive → pattern → screen). Applies after create-app expo — any apps/<slug> using Expo Router.
+globs: apps/*/app/**/*
+alwaysApply: false
+---
+
+# Mobile UI Styling 規範
+
+本規範適用透過 `create-app expo` 建立的 Expo app（`apps/<slug>`，不一定是 `mobile`）。
+
+## 四層分工
+
+| 層級 | 路徑 | 職責 |
+|------|------|------|
+| Token | `constants/theme.ts` | 顏色、間距、圓角、字體等數值 |
+| Primitive | `components/themed-*.tsx`, `hooks/use-theme.ts` | 封裝 RN 元件並套用 token |
+| Pattern | `components/*.tsx`（跨 feature）或 `features/*/components/`（專用） | 可重複 UI（按鈕、輸入框、卡片） |
+| Screen | `features/*/screen.tsx` | 頁面 layout 與流程串接 |
+
+## Token 規則
+
+- 所有語意色定義在 `constants/theme.ts` 的 `Colors.light` / `Colors.dark`
+- 間距只用 `Spacing.*`，圓角只用 `Radius.*`
+- Screen 與 feature 元件**禁止**寫 `#xxxxxx`（splash / brand 動畫等一次性資源除外）
+- 動態主題色一律透過 `useTheme()` 取得，禁止 `Colors.light.xxx` 寫死
+
+## Primitive 規則
+
+- 頁面外層使用 `<Screen>`，不重複包 `SafeAreaView`
+- 文字使用 `<ThemedText type="...">` 與 `themeColor`，不在 screen 重複定義 `fontSize` / `fontWeight`
+- 背景使用 `<ThemedView type="...">` 表達語意背景色
+
+## Pattern 元件（`components/`）
+
+| 元件 | 用途 |
+|------|------|
+| `PrimaryButton` | 主要操作（深色底） |
+| `SecondaryButton` | 次要操作（邊框） |
+| `DestructiveButton` | 危險操作（登出等） |
+| `TextField` | 統一輸入框樣式 |
+| `Card` | 邊框卡片（`default` / `warning` / `muted`） |
+| `ErrorMessage` | 錯誤提示文字 |
+
+同一 pattern 出現 3 次以上才抽到 `components/`；僅單一 feature 使用則放 `features/<feature>/components/`。
+
+## Screen StyleSheet 規則
+
+**可以寫在 screen 的 StyleSheet：**
+
+- flex layout（`flexDirection`, `justifyContent`, `alignItems`, `flex: 1`）
+- 該頁專屬的 gap / paddingTop 等結構間距（使用 `Spacing.*`）
+
+**不應寫在 screen：**
+
+- 顏色 hex 值 → 改用 `useTheme()` 或 `themeColor`
+- 重複的按鈕 / 輸入框 / 卡片樣式 → 改用 pattern 元件
+- typography → 改用 `ThemedText type`
+
+動態色使用陣列合併：`style={[styles.composer, { borderColor: theme.border }]}`
+
+## 檔案落點
+
+```
+components/           # 跨 feature 的 primitive + pattern
+features/<feature>/
+  screen.tsx          # 薄層：layout + 資料串接
+  components/         # 該 feature 專用 UI（如 message-bubble）
+```
+
+## PR 檢查清單
+
+- [ ] 無硬編碼 `#hex`（brand 資源除外）
+- [ ] 使用 `<Screen>` 作為頁面根元件
+- [ ] 文字透過 `ThemedText`，顏色透過 `themeColor` 或 `useTheme()`
+- [ ] 間距 / 圓角使用 `Spacing` / `Radius` token
+- [ ] 重複 UI 已抽取為 pattern 元件
+- [ ] dark mode 下顏色有對應 token
+
+## 自動檢查
+
+- `bun run lint`：`apps/mobile` 啟用 Biome `noReactNativeLiteralColors`（`StyleSheet` / inline style 禁止顏色字面量）
+- `bun -F mobile test`：`no-hardcoded-colors-test` 掃描 `#hex`（`theme.ts` 與 splash brand 除外）
+- 豁免清單與 Biome overrides 保持同步：`theme.ts`、`animated-icon*`

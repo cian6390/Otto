@@ -1,0 +1,8 @@
+{
+  "stack": "nextjs",
+  "description": "Additional Next.js app — scaffold via create-next-app (latest stable)",
+  "scaffold": {
+    "command": "pnpm dlx create-next-app@latest . --typescript --tailwind --eslint --app --src-dir --import-alias \"@/*\" --use-pnpm --yes",
+    "cwd": "__TARGET_DIR__"
+  }
+}

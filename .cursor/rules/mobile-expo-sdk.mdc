@@ -1,0 +1,17 @@
+---
+description: mobile Expo SDK 57 — 改動前必讀官方 v57 文件；輸入畫面須分析鍵盤行為並寫入規格理由
+globs: apps/mobile/**/*
+alwaysApply: true
+---
+
+# mobile / Expo SDK 57
+
+- 任何 Expo 相關改動前，先讀 https://docs.expo.dev/versions/v57.0.0/ 對應頁面
+- 勿用舊版 SDK 記憶；以 v57 文件 + `npx expo install --fix` 為準
+
+## 鍵盤行為（有文字／數字輸入時）
+
+- Otto **自行分析**情境，依 https://kirillzyusko.github.io/react-native-keyboard-controller/docs/guides/components-overview#which-component-should-you-use 選元件
+- 在該 feature 規格寫明 **選用＋為什麼**（見 `docs/specification/<app>/design.md`「鍵盤與輸入焦點」）
+- Modal／DatePicker 關閉後勿誤 focus 底層 TextInput：見 `react-native-modal-focus` rule
+- 細節見該 app 的 `docs/specification/<app>/design.md` 與 `docs/development/mobile-builds.md`

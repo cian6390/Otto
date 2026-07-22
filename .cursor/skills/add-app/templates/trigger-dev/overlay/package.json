@@ -1,0 +1,22 @@
+{
+  "name": "@t42/__APP_SLUG__",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "npx trigger.dev@latest dev",
+    "deploy": "npx trigger.dev@latest deploy",
+    "typecheck": "tsc --noEmit",
+    "lint": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@trigger.dev/sdk": "catalog:",
+    "zod": "catalog:"
+  },
+  "devDependencies": {
+    "@t42/tsconfig": "workspace:*",
+    "@trigger.dev/build": "catalog:",
+    "@types/node": "catalog:",
+    "typescript": "catalog:"
+  }
+}

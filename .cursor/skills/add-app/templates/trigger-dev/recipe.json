@@ -1,0 +1,5 @@
+{
+  "stack": "trigger-dev",
+  "description": "Trigger.dev worker — minimal overlay; AI runs trigger.dev init / pins catalog",
+  "scaffold": null
+}

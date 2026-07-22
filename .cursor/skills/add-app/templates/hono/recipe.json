@@ -1,0 +1,8 @@
+{
+  "stack": "hono",
+  "description": "Hono Node.js API — scaffold via upstream create-hono (latest stable)",
+  "scaffold": {
+    "command": "printf 'n\\n' | pnpm dlx create-hono@latest . --template nodejs -p pnpm",
+    "cwd": "__TARGET_DIR__"
+  }
+}

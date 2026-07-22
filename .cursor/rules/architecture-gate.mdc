@@ -1,0 +1,22 @@
+---
+description: Require architecture placement check before implementation
+alwaysApply: true
+---
+
+# Architecture Gate
+
+在任何實作或重構前，必須先完成「落點判斷」，再開始修改程式碼。
+
+## 回覆前置檢查（必做）
+
+- 這次變更屬於哪個 feature？
+- 會落在哪一層：`route/controller`、`service/use-case`、`schema/model`、`shared`？
+- 為什麼這個落點符合 feature-based 規範？
+- 是否需要新增或更新 schema 作為單一真實來源？
+
+## 實作約束
+
+- 未完成落點判斷前，不得直接開始寫碼。
+- 若發現需求無法歸類到既有 feature，先提出 feature 邊界再實作。
+- 若程式碼目前放錯層，優先整理結構，再追加新功能。
+- 若為小改動，也要至少用 1-2 句交代落點理由。

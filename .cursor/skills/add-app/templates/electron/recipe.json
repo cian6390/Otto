@@ -1,0 +1,8 @@
+{
+  "stack": "electron",
+  "description": "Electron desktop — template via degit (non-interactive; create-electron-vite CLI prompts)",
+  "scaffold": {
+    "command": "pnpm dlx degit electron-vite/create-electron-vite/template-vanilla-ts . && test -f _gitignore && mv _gitignore .gitignore",
+    "cwd": "__TARGET_DIR__"
+  }
+}

@@ -1,0 +1,8 @@
+{
+  "stack": "playwright",
+  "description": "Playwright E2E — minimal overlay; AI runs playwright install + catalog pin",
+  "scaffold": {
+    "command": "pnpm dlx create-playwright@latest --quiet --install-deps --browser chromium --lang ts",
+    "cwd": "__TARGET_DIR__"
+  }
+}

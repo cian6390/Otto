@@ -1,0 +1,8 @@
+{
+  "stack": "expo",
+  "description": "Expo React Native — scaffold via create-expo-app (latest SDK)",
+  "scaffold": {
+    "command": "pnpm dlx create-expo-app@latest . --template blank --yes --no-install",
+    "cwd": "__TARGET_DIR__"
+  }
+}

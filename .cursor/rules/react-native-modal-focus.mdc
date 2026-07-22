@@ -1,0 +1,35 @@
+---
+description: RN Modal／DatePicker／系統 dialog 關閉後勿讓底層 TextInput 被自動 focus
+globs: apps/*/app/**/*.{ts,tsx},apps/*/src/**/*.{ts,tsx}
+alwaysApply: false
+---
+
+# React Native：Modal／Picker 關閉後的 focus 還原
+
+## 坑
+
+在含 `TextInput` 的畫面上關閉 **RN `Modal`**、**DateTimePicker**（或 Android 系統 dialog）後，系統／RN 可能把 first responder 還給底層「先前」或「第一個」`TextInput`，軟鍵盤跟著彈出。
+
+- **iOS**：自訂 `Modal` 卸載時尤常見
+- **Android**：系統 dialog 關閉時，若開 picker 前有欄位在 focus，也常還原
+
+這是 RN／平台行為，不是產品規格；datetimepicker 社群亦有同類回報、無官方乾淨 API。
+
+## 必做（關閉時）
+
+任何「關掉會蓋住表單的 overlay／picker」路徑（確定、取消、backdrop、`onDismiss`）都要清 focus：
+
+```ts
+requestAnimationFrame(() => {
+  TextInput.State.currentlyFocusedInput()?.blur()
+  Keyboard.dismiss()
+})
+```
+
+- 只叫 `Keyboard.dismiss()` **不夠**（鍵盤藏了但 focus 可能還在，下一幀又彈回）
+- 必要時可再短延遲一幀；避免長 `setTimeout` 當唯一解
+
+## 預防
+
+- 日期／時間顯示列用 `Pressable` + `Text`，勿用可 focus 的 `TextInput` 當觸發器
+- 若必須用 `TextInput` 顯示：`editable={false}` 且 `showSoftInputOnFocus={false}`

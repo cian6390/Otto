@@ -1,0 +1,8 @@
+{
+  "stack": "nestjs",
+  "description": "NestJS API — scaffold via @nestjs/cli (latest stable)",
+  "scaffold": {
+    "command": "pnpm dlx @nestjs/cli@latest new . --package-manager pnpm --skip-git --skip-install",
+    "cwd": "__TARGET_DIR__"
+  }
+}
