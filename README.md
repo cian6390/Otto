@@ -1,46 +1,65 @@
 # Otto
 
-**Otto** is a coding agent for AI-assisted development in Cursor (and compatible tools). It ships behavior rules, skills, and project rules — not application code.
+**Otto** is a **portable coding-agent pack** for AI-assisted development. It is intentionally tool-agnostic: this repository is **not** a drop-in `.cursor/` tree.
 
 | Related repo | Role |
 |--------------|------|
-| [t42-starter](https://github.com/cian6390/t42-starter) | TypeScript monorepo skeleton (`@t42/*`, apps, packages) |
-| [t42-otto](https://github.com/cian6390/t42-otto) | Distribution: t42-starter + this agent layer |
-| **Otto** (this repo) | Agent layer only |
+| [t42-starter](https://github.com/cian6390/t42-starter) | TypeScript monorepo skeleton (`@t42/*`) |
+| [t42-otto](https://github.com/cian6390/t42-otto) | Example distribution: t42-starter + Otto (Cursor layout) |
+| **Otto** (this repo) | Canonical agent files + install/update guidance |
 
-## What lives here
+## Layout (canonical)
 
 ```
-CLAUDE.md                 # Agent identity & working rules
-.cursor/skills/           # Skills (startup, add-app, write-spec, otto-update, …)
-.cursor/rules/            # Always-on / glob rules
-.cursor/commands/         # Slash commands (e.g. /startup)
+AGENTS.md       # Agent identity & working rules
+skills/         # Skills (startup, add-app, write-spec, otto-update, …)
+rules/          # Project rules / gates
+commands/       # Slash-style command prompts
 ```
 
-Consumer projects (such as t42-otto) keep:
+There is **no** `.cursor/` or `.claude/` directory here. Consumers map these folders into whatever their AI tool expects.
 
-- `AGENTS.md` → symlink to `CLAUDE.md`
-- `.claude` → symlink to `.cursor` (optional)
+## Install into a project
 
-Those symlinks are **not** maintained in this repo.
+### Cursor
 
-## Use in a project
+| Otto | Cursor project |
+|------|----------------|
+| `AGENTS.md` | `AGENTS.md` (optional: `CLAUDE.md` → `AGENTS.md`) |
+| `skills/` | `.cursor/skills/` |
+| `rules/` | `.cursor/rules/` |
+| `commands/` | `.cursor/commands/` |
 
-1. Copy (or sync) the paths above into your repo root.
-2. Ensure `AGENTS.md` → `CLAUDE.md`.
-3. Open the project in Cursor; Otto’s skills become available.
+### Claude Code
 
-To refresh from upstream after local edits, use the **`otto-update`** skill in a consumer that already has it. It three-way-merges:
+| Otto | Claude Code project |
+|------|---------------------|
+| `AGENTS.md` | `AGENTS.md` |
+| `skills/` | `.claude/skills/` |
+| `rules/` | `.claude/rules/` |
+| `commands/` | `.claude/commands/` |
 
-- **base** — last synced hashes in `manifest.json`
-- **local** — your working tree
-- **remote** — this repository’s latest `otto-v*` tag (or `main`)
+### Other tools
 
-Conflicts are never auto-resolved; the agent must ask you.
+Same idea: copy `skills` / `rules` / `commands` into that tool’s config directory, keep `AGENTS.md` at the repo root. If unsure, ask — do not invent a layout.
+
+First-time bootstrap can be a manual copy. After `skills/otto-update/` exists in the **mapped** location, prefer the update skill below.
+
+## Updating (`otto-update`)
+
+The **`otto-update`** skill teaches an agent to:
+
+1. Detect the consumer AI layout (Cursor / Claude Code / …), or **ask** if unknown
+2. Download the latest `otto-v*` tag from this repo (or `main`)
+3. Three-way-merge using `skills/otto-update/manifest.json` hashes:
+   - **base** — last successful sync
+   - **local** — your project (mapped paths)
+   - **remote** — this repository (canonical paths)
+4. Apply only safe updates; **never** silently overwrite when you changed a file and upstream also changed it
+
+In a Cursor consumer the skill usually lives at `.cursor/skills/otto-update/` (copied from `skills/otto-update/` here).
 
 ## Release tags
-
-Consumers prefer git tags:
 
 ```
 otto-v0.1.0
@@ -48,13 +67,10 @@ otto-v0.2.0
 …
 ```
 
-`otto-update` picks the latest `otto-v*` tag by semver order. If no tags exist, it falls back to `main`.
+`otto-update` selects the latest `otto-v*` by semver. No tags → `main`.
 
 ## Development
 
-Edit skills/rules here (or in t42-otto and push back). After meaningful agent changes:
-
-1. Commit on `main`
-2. Tag `otto-vX.Y.Z`
-3. Push tag
-4. In each consumer, run the otto-update skill
+1. Edit files in this repo under the canonical layout
+2. Commit on `main`, tag `otto-vX.Y.Z`, push
+3. In each consumer, run the otto-update skill
