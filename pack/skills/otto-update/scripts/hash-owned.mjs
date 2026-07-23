@@ -2,10 +2,14 @@
 /**
  * Hash Otto-owned files for otto-update manifest.
  *
- * Canonical paths (Otto upstream / manifest.files keys):
+ * Canonical paths (manifest.files keys — consumer-facing):
  *   AGENTS.md, skills/**, rules/**, commands/**
  *
- * Consumer layouts map those roots onto tool-specific directories
+ * Upstream Otto checkout stores those under pack/ (layout=plain).
+ * Older tags may still keep them at the repo root; plain layout
+ * falls back to root when pack/ is absent.
+ *
+ * Consumer layouts map canonical roots onto tool-specific directories
  * (e.g. Cursor → .cursor/skills).
  *
  * Usage:
@@ -24,20 +28,13 @@ import {
   existsSync,
   realpathSync,
 } from 'node:fs'
-import { join, dirname, resolve, relative, sep } from 'node:path'
+import { join, dirname, resolve, basename, sep } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
 const defaultManifest = resolve(__dirname, '../manifest.json')
 
-/** Otto-canonical root → relative path under a consumer/tool tree */
-const LAYOUT_MAP = {
-  plain: {
-    'AGENTS.md': 'AGENTS.md',
-    skills: 'skills',
-    rules: 'rules',
-    commands: 'commands',
-  },
+const CONSUMER_LAYOUT_MAP = {
   cursor: {
     'AGENTS.md': 'AGENTS.md',
     skills: '.cursor/skills',
@@ -50,6 +47,20 @@ const LAYOUT_MAP = {
     rules: '.claude/rules',
     commands: '.claude/commands',
   },
+}
+
+const PLAIN_PACK_MAP = {
+  'AGENTS.md': 'pack/AGENTS.md',
+  skills: 'pack/skills',
+  rules: 'pack/rules',
+  commands: 'pack/commands',
+}
+
+const PLAIN_LEGACY_MAP = {
+  'AGENTS.md': 'AGENTS.md',
+  skills: 'skills',
+  rules: 'rules',
+  commands: 'commands',
 }
 
 function parseArgs(argv) {
@@ -94,6 +105,15 @@ function shouldSkipCanonical(rel) {
   )
 }
 
+function plainMapForRoot(repoRoot) {
+  return existsSync(join(repoRoot, 'pack')) ? PLAIN_PACK_MAP : PLAIN_LEGACY_MAP
+}
+
+function layoutMap(layout, repoRoot) {
+  if (layout === 'plain') return plainMapForRoot(repoRoot)
+  return CONSUMER_LAYOUT_MAP[layout] ?? null
+}
+
 /**
  * Infer layout from where this script / manifest lives, or from repo markers.
  */
@@ -101,6 +121,13 @@ function detectLayout(repoRoot, manifestPath) {
   const norm = manifestPath.split(sep).join('/')
   if (norm.includes('/.cursor/skills/otto-update/')) return 'cursor'
   if (norm.includes('/.claude/skills/otto-update/')) return 'claude'
+  if (
+    existsSync(join(repoRoot, 'pack', 'skills', 'otto-update')) &&
+    existsSync(join(repoRoot, 'pack', 'AGENTS.md'))
+  ) {
+    return 'plain'
+  }
+  // Legacy Otto upstream (pre-pack/)
   if (
     existsSync(join(repoRoot, 'skills', 'otto-update')) &&
     existsSync(join(repoRoot, 'AGENTS.md'))
@@ -115,10 +142,15 @@ function detectLayout(repoRoot, manifestPath) {
 function resolveRepoRoot(manifestPath, layout, explicitRoot) {
   if (explicitRoot) return resolve(explicitRoot)
   const skillDir = dirname(manifestPath) // …/otto-update
-  // plain:   <root>/skills/otto-update/manifest.json
-  // cursor:  <root>/.cursor/skills/otto-update/manifest.json
-  // claude:  <root>/.claude/skills/otto-update/manifest.json
-  if (layout === 'plain') return resolve(skillDir, '../..')
+  // plain (pack):   <root>/pack/skills/otto-update/manifest.json
+  // plain (legacy): <root>/skills/otto-update/manifest.json
+  // cursor:         <root>/.cursor/skills/otto-update/manifest.json
+  // claude:         <root>/.claude/skills/otto-update/manifest.json
+  if (layout === 'plain') {
+    const viaPack = resolve(skillDir, '../../..')
+    if (basename(resolve(skillDir, '../..')) === 'pack') return viaPack
+    return resolve(skillDir, '../..')
+  }
   return resolve(skillDir, '../../..')
 }
 
@@ -127,12 +159,13 @@ function resolveRepoRoot(manifestPath, layout, explicitRoot) {
  * AGENTS.md: if missing but CLAUDE.md exists (legacy), hash CLAUDE.md under key AGENTS.md.
  */
 function localPathForRoot(repoRoot, layout, ownedRoot) {
-  const map = LAYOUT_MAP[layout]
+  const map = layoutMap(layout, repoRoot)
   if (!map) throw new Error(`Unknown layout: ${layout}`)
   const mapped = map[ownedRoot] ?? ownedRoot
   if (ownedRoot === 'AGENTS.md') {
     const agents = join(repoRoot, mapped)
     if (existsSync(agents)) return mapped
+    // Consumer legacy: CLAUDE.md at repo root (not under pack/)
     const claude = join(repoRoot, 'CLAUDE.md')
     if (existsSync(claude)) return 'CLAUDE.md'
   }
@@ -162,23 +195,37 @@ function collectFiles(absRoot, canonicalPrefix, acc) {
   }
 }
 
+function guessAutoRoot(manifestPath, explicitRoot) {
+  if (explicitRoot) return resolve(explicitRoot)
+  const skillDir = dirname(manifestPath)
+  // Prefer pack/skills/otto-update → repo root
+  const viaPack = resolve(skillDir, '../../..')
+  if (
+    basename(resolve(skillDir, '../..')) === 'pack' ||
+    existsSync(join(viaPack, 'pack', 'skills', 'otto-update'))
+  ) {
+    return viaPack
+  }
+  // Consumer: .cursor|claude/skills/otto-update → repo root
+  if (
+    existsSync(join(viaPack, '.git')) ||
+    existsSync(join(viaPack, 'package.json')) ||
+    existsSync(join(viaPack, '.cursor')) ||
+    existsSync(join(viaPack, '.claude'))
+  ) {
+    return viaPack
+  }
+  // Legacy plain: skills/otto-update → repo root
+  return resolve(skillDir, '../..')
+}
+
 function main() {
   const args = parseArgs(process.argv)
   const manifest = JSON.parse(readFileSync(args.manifest, 'utf8'))
 
   let layout = args.layout
-  const tentativeRoot = args.root
-    ? resolve(args.root)
-    : resolve(dirname(args.manifest), '../..')
-
   if (layout === 'auto') {
-    // Prefer marker-based detection with a better root guess
-    const guessRoot = args.root
-      ? resolve(args.root)
-      : existsSync(join(dirname(args.manifest), '../../../.git')) ||
-          existsSync(join(dirname(args.manifest), '../../../package.json'))
-        ? resolve(dirname(args.manifest), '../../..')
-        : resolve(dirname(args.manifest), '../..')
+    const guessRoot = guessAutoRoot(args.manifest, args.root)
     layout = detectLayout(guessRoot, args.manifest)
     if (!layout) {
       console.error(
@@ -193,9 +240,9 @@ function main() {
     }
   }
 
-  if (!LAYOUT_MAP[layout]) {
+  if (layout !== 'plain' && !CONSUMER_LAYOUT_MAP[layout]) {
     throw new Error(
-      `Unknown layout "${layout}". Use: ${Object.keys(LAYOUT_MAP).join(' | ')} | auto`,
+      `Unknown layout "${layout}". Use: plain | ${Object.keys(CONSUMER_LAYOUT_MAP).join(' | ')} | auto`,
     )
   }
 
@@ -214,7 +261,11 @@ function main() {
     const localRel = (() => {
       // Remap directory-prefix roots
       for (const ownedRoot of manifest.ownedRoots) {
-        if (canon === ownedRoot || canon.startsWith(`${ownedRoot}/`) || canon.startsWith(`${ownedRoot}${sep}`)) {
+        if (
+          canon === ownedRoot ||
+          canon.startsWith(`${ownedRoot}/`) ||
+          canon.startsWith(`${ownedRoot}${sep}`)
+        ) {
           const baseLocal = localPathForRoot(repoRoot, layout, ownedRoot)
           if (canon === ownedRoot) return baseLocal
           const rest = canon.slice(ownedRoot.length + 1)

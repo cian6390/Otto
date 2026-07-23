@@ -12,29 +12,33 @@ description: >-
 
 把上游 [Otto](https://github.com/cian6390/Otto) 的 **泛用 agent 檔案**，依本專案使用的 AI 工具目錄結構，**三方合併**進來。
 
-Otto upstream **不是**開箱即用的 Cursor 目錄；根目錄是：
+Otto upstream **不是**開箱即用的 Cursor 目錄；發行物在 **`pack/`**：
 
 ```
-AGENTS.md
-skills/
-rules/
-commands/
+pack/
+  AGENTS.md
+  skills/
+  rules/
+  commands/
 ```
 
-本 skill 負責對應到 consumer，例如 Cursor → `.cursor/skills|rules|commands`。
+本 skill 負責對應到 consumer，例如 Cursor → `.cursor/skills|rules|commands`，以及 consumer 根目錄 `AGENTS.md`。
 
-**不做**：改 `apps/`、`packages/`、產品規格，或任何不在 `manifest.json` → `ownedRoots` 的路徑。
+**不做**：改 `apps/`、`packages/`、產品規格，或任何不在 `manifest.json` → `ownedRoots` 的路徑。也不碰 Otto 上游根目錄的維護用 `AGENTS.md` / `README.md`。
 
 ## 已確認決策
 
 | 項目 | 決定 |
 |------|------|
 | 遠端 | [cian6390/Otto](https://github.com/cian6390/Otto) |
-| 交付單位 | 優先 git tag（`tagPrefix`=`otto-v`）；若無 tag → `defaultBranch`（`main`） |
-| Upstream 路徑（canonical） | `AGENTS.md`、`skills/`、`rules/`、`commands/` |
+| 交付單位 | 優先 git tag（`tagPrefix`=`v`，例如 `v0.1.0`）；若無 tag → `defaultBranch`（`main`） |
+| Upstream 實體路徑 | `pack/AGENTS.md`、`pack/skills/`、`pack/rules/`、`pack/commands/` |
+| Manifest / 合併用 canonical key | 仍為 `AGENTS.md`、`skills/`、`rules/`、`commands/`（不含 `pack/` 前綴） |
 | Consumer 路徑 | 依偵測到的 **layout** 映射（見下） |
 | 衝突 | **不得擅自選邊**；與使用者討論後再套用 |
-| 本 skill | 也在 owned 範圍內（upstream：`skills/otto-update/`） |
+| 本 skill | 也在 owned 範圍內（upstream：`pack/skills/otto-update/`） |
+
+舊 tag（尚無 `pack/`、檔案在上游根目錄）仍可讀：`hash-owned.mjs` 的 `plain` layout 在沒有 `pack/` 時退回根目錄路徑。
 
 ## Layout 偵測（必做）
 
@@ -44,7 +48,8 @@ commands/
 |------|--------|------|
 | 存在 `.cursor/`（或 manifest 位於 `.cursor/skills/otto-update/`） | `cursor` | `skills`→`.cursor/skills`，`rules`→`.cursor/rules`，`commands`→`.cursor/commands`，`AGENTS.md`→`AGENTS.md` |
 | 存在 `.claude/`（或 manifest 位於 `.claude/skills/otto-update/`） | `claude` | 同上但前綴 `.claude/` |
-| 根目錄即有 `skills/otto-update` + `AGENTS.md`（Otto 上游本身） | `plain` | 不映射 |
+| 存在 `pack/skills/otto-update` + `pack/AGENTS.md`（Otto 上游） | `plain` | canonical → `pack/…` |
+| 根目錄即有 `skills/otto-update` + `AGENTS.md`（舊版 Otto 上游） | `plain` | 不映射（legacy） |
 
 ```bash
 # 腳本可 --layout auto；失敗時 exit 2 並印 layout_unknown
@@ -63,7 +68,7 @@ Legacy：若尚無 `AGENTS.md`、僅有 `CLAUDE.md`，hash／套用時把 `AGENT
 |------|------|
 | **base** | `manifest.files`（canonical 路徑的 hash） |
 | **local** | 目前工作樹（經 layout 映射後讀檔，hash key 仍用 canonical） |
-| **remote** | 下載的 Otto checkout（`--layout plain`） |
+| **remote** | 下載的 Otto checkout（`--layout plain`，讀 `pack/` 或 legacy 根目錄） |
 
 ## 前置條件
 
@@ -81,7 +86,7 @@ Legacy：若尚無 `AGENTS.md`、僅有 `CLAUDE.md`，hash／套用時把 `AGENT
 git ls-remote --tags <upstream.gitUrl> '<tagPrefix>*'
 ```
 
-取最新 `otto-v*`；若無 tag → `upstream.defaultBranch`。使用者指定 tag／branch／sha 時從其指定。
+取最新 `v*`（semver）；若無 tag → `upstream.defaultBranch`。使用者指定 tag／branch／sha 時從其指定。
 
 若已與 `synced.tag`／`synced.gitSha` 相同 → 告知已最新（仍可重算 hash 核對）。
 
@@ -92,7 +97,7 @@ TMP=$(mktemp -d)
 git clone --depth 1 --branch <tag-or-branch> <upstream.gitUrl> "$TMP/otto"
 ```
 
-遠端樹為 **plain** layout（`skills/`、`rules/`、`commands/`、`AGENTS.md`）。
+遠端樹為 **plain** layout：新版在 `pack/`；舊 tag 可能仍在根目錄。
 
 ### 3. 計算 hash
 
@@ -105,12 +110,16 @@ MANIFEST=.cursor/skills/otto-update/manifest.json
 # local（consumer layout）
 node "$SCRIPT" --manifest "$MANIFEST" --layout cursor
 
-# remote（Otto upstream = plain）
-node "$SCRIPT" --manifest "$TMP/otto/skills/otto-update/manifest.json" \
+# remote（Otto upstream = plain；新版讀 pack/）
+REMOTE_MANIFEST="$TMP/otto/pack/skills/otto-update/manifest.json"
+if [ ! -f "$REMOTE_MANIFEST" ]; then
+  REMOTE_MANIFEST="$TMP/otto/skills/otto-update/manifest.json"
+fi
+node "$SCRIPT" --manifest "$REMOTE_MANIFEST" \
   --layout plain --root "$TMP/otto"
 ```
 
-若遠端尚無 `skills/otto-update/manifest.json`，用**本機** manifest 的 `ownedRoots` + `--layout plain --root "$TMP/otto"`。
+若遠端尚無 otto-update manifest，用**本機** manifest 的 `ownedRoots` + `--layout plain --root "$TMP/otto"`。
 
 得到 `base`（manifest.files）、`local`、`remote` 三份 **canonical key** map。
 
@@ -136,8 +145,8 @@ node "$SCRIPT" --manifest "$TMP/otto/skills/otto-update/manifest.json" \
 ### 6. 套用
 
 1. 若 `skills/otto-update` 自身需更新，**先**套用 skill，再繼續。
-2. 將 canonical 路徑寫入 layout 對應的本機路徑（例：`skills/foo` → `.cursor/skills/foo`）。
-3. **不要**把 upstream 的 `README.md` 拷進 consumer。
+2. 將 canonical 路徑寫入 layout 對應的本機路徑（例：`skills/foo` → `.cursor/skills/foo`）。從遠端讀檔時路徑為 `pack/<canonical>`（或 legacy 根目錄）。
+3. **不要**把 upstream 的 `README.md` 或上游根目錄維護用 `AGENTS.md` 拷進 consumer。
 4. **不要**建立 `.cursor`／`.claude` 整層以外的「假 Cursor 專用結構」到 Otto；只寫映射後的路徑。
 5. 刪檔僅在 `apply` 且 `local == base`（或使用者同意）時執行。
 6. 摘要 `git status`／`git diff`。
@@ -151,7 +160,7 @@ node "$SCRIPT" --manifest "$TMP/otto/skills/otto-update/manifest.json" \
 
 ## Chicken-and-egg
 
-尚未有本 skill 的專案：手動從 Otto 取得 `skills/otto-update/`，依 layout 放到 `.cursor/skills/otto-update/`（或 `.claude/...`），並放置／合併其餘 owned 檔，再跑本流程。
+尚未有本 skill 的專案：手動從 Otto 取得 `pack/skills/otto-update/`，依 layout 放到 `.cursor/skills/otto-update/`（或 `.claude/...`），並放置／合併其餘 owned 檔，再跑本流程。
 
 ## 安全
 
@@ -162,12 +171,14 @@ node "$SCRIPT" --manifest "$TMP/otto/skills/otto-update/manifest.json" \
 ## 速查
 
 ```bash
-git ls-remote --tags git@github.com:cian6390/Otto.git 'otto-v*'
+git ls-remote --tags git@github.com:cian6390/Otto.git 'v*'
 
 node .cursor/skills/otto-update/scripts/hash-owned.mjs --layout cursor
 node .cursor/skills/otto-update/scripts/hash-owned.mjs --layout cursor --write
 
-node .cursor/skills/otto-update/scripts/hash-owned.mjs \
+# Otto upstream checkout
+node pack/skills/otto-update/scripts/hash-owned.mjs --layout plain --write
+node pack/skills/otto-update/scripts/hash-owned.mjs \
   --layout plain --root /path/to/Otto-checkout \
-  --manifest /path/to/Otto-checkout/skills/otto-update/manifest.json
+  --manifest /path/to/Otto-checkout/pack/skills/otto-update/manifest.json
 ```

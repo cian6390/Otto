@@ -1,22 +1,21 @@
 # Who are you?
 
-You are **Otto**, your mission is to help the user maintain this project.
+You are helping **maintain Otto** — the portable coding-agent pack in this repository.
 
-## Spec-first development
+This repo is **not** a consumer of Otto. Do **not** treat root `AGENTS.md` / `skills/` / `rules/` / `commands/` as the product; those live under `pack/`.
 
-This project follows a spec-first strategy: nothing gets built without a specification first.
+## Source of truth
 
-These specs are meant to live long-term. Even if every line of code were deleted today, the entire system could be rebuilt quickly with AI as long as the specs survive.
+| Path | Role |
+|------|------|
+| `pack/AGENTS.md` | Otto identity shipped to consumer projects |
+| `pack/skills/` | Skills (canonical) |
+| `pack/rules/` | Rules / gates (canonical) |
+| `pack/commands/` | Slash-style commands (canonical) |
+| Root `AGENTS.md` | **This file** — maintainer context only (not shipped) |
+| `README.md` | Install / update / layout docs for humans |
 
-Concretely, whenever a new app is added to the project, a directory with the same name appears under `docs/specification`, capturing all of that app's feature specs.
-
-In other words, `docs/specification` is the real source code of this project — the code under `apps/` is merely the build artifact of using AI as a compiler.
-
-You (Otto) are the primary author and maintainer of everything under `docs/specification`, and you must strictly follow `docs/specification/README.md` when maintaining it.
-
-### Spec → wireframe → implementation
-
-Features with user-visible UI follow **spec → wireframe → code** (not spec straight to `apps/`). After L0–L2 spec, produce static HTML wireframes under `docs/specification/<app>/wireframes/` for user review before implementation. Governance: `docs/specification/wireframes.md`. Skills: `write-spec`, then `wireframe`.
+Edit product behavior only under `pack/`. After meaningful pack changes, refresh `pack/skills/otto-update/manifest.json` hashes (`hash-owned.mjs --layout plain --write`) before tagging.
 
 ## Working rules
 
@@ -37,19 +36,15 @@ Features with user-visible UI follow **spec → wireframe → code** (not spec s
 - When writing documentation, state the essentials clearly and avoid unnecessary verbosity.
 - When asked to translate or rewrite a document in English, do not do a literal translation; write it in natural, idiomatic English.
 
-### Operations
+### Scope
 
-- For deployment or infrastructure assessment, use the `deployment-review` skill against `docs/development/deployment.md`.
-- When implementing **server-side** features (routes, services, workers), follow `docs/development/logging.md` — use `logger` from `@t42/observability/server` (or `@/lib/logger` in studio); do not use `console.*` or module-scope `getLogger()`.
-- When implementing **client-side** features (`'use client'`, Expo screens), use `reportClientError()` from `@t42/observability/client` in error boundaries and critical failures; do not import the server package.
+- Prefer changing `pack/` + `README.md` + `otto-update` together when layout or sync semantics change.
+- Do not invent a `.cursor/` or `.claude/` tree in this repo; Otto stays tool-agnostic under `pack/`.
+- Test consumer install/update against a separate project (e.g. t42-otto), not by dogfooding a full Otto install here.
 
 ### Self-service first (CLI, API, MCP)
 
 When you need information from an external system, **fetch it yourself** before asking the user to open a dashboard and copy-paste.
 
-- **Prefer**: project CLIs (`gh`, `sentry-cli`, `eas`, `vercel`, `neonctl`, etc.), HTTP APIs, and enabled **MCP** servers.
-- **Credentials**: look for tokens in app `.env.local`, `.secrets/`, EAS/Vercel env, or MCP auth — use them in the shell without printing secrets. Example: `source apps/<app>/.env.local` then run `sentry-cli issues list`.
-- **Do not** send the user to a web UI to find issue IDs, logs, env values, or build output when you can query the same data directly.
-- **Ask the user only when blocked**: missing auth you cannot obtain, permission denied, ambiguous product choice, or an action that requires their explicit approval (e.g. production deploy, deleting data).
-
-The user may not know the tool (Sentry, Vercel, Neon, …). Your job is to pull the facts and summarize — not to outsource navigation to them.
+- **Prefer**: project CLIs (`gh`, `git`, …), HTTP APIs, and enabled **MCP** servers.
+- **Ask the user only when blocked**: missing auth, permission denied, ambiguous product choice, or an action that needs explicit approval (e.g. publishing a release tag).

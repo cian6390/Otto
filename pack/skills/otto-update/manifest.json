@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "upstream": {
     "gitUrl": "git@github.com:cian6390/Otto.git",
-    "tagPrefix": "otto-v",
+    "tagPrefix": "v",
     "defaultBranch": "main"
   },
   "synced": {
@@ -84,8 +84,8 @@
     "skills/deploy-vercel/SKILL.md": "6976cf631ef828d5a0d7d619ed76d1cbd1801059e474da58dee269e34a9da10b",
     "skills/deployment-review/SKILL.md": "2bb1fa48d3686b6aa7c33bc8ba8b86dfd54c4eba18be152ec2167088b0ea0827",
     "skills/git-commit/SKILL.md": "36008e38376a015149d2cca3e3a3b478406e45f6b05d405aa09307b5c012e5d3",
-    "skills/otto-update/SKILL.md": "38eb4f863b4e045be73f6a8597895c08f3a26fc81b230d45d2de8dbe067baa42",
-    "skills/otto-update/scripts/hash-owned.mjs": "a30cb7cc448be1c8e37214bc0263982f26b461e4bcb2e160a6ce7949da2b5be8",
+    "skills/otto-update/SKILL.md": "a2cff1606c17dde22edb7eae8e340d487312e9a167e20442732175042cc418a9",
+    "skills/otto-update/scripts/hash-owned.mjs": "f223f1ce6f13e157f53847b3abe42ffbdc66ced8cc444203fb6007091ca14d75",
     "skills/setup-neon/SKILL.md": "f3ed24a061b4e02b8bbc1ccb9d66472c39b3f9bc7b4bd80b8f04f23ec89fc802",
     "skills/startup/SKILL.md": "c6e4bac4e6a6582f3f83b6633a7ec532af380ce6b51c585de62ca3398370ff2e",
     "skills/startup/troubleshooting.md": "acc8121741a1a15aa05c2245cfb9f079389d5aa5a3d221733f53626812722398",
