@@ -56,11 +56,12 @@ The **`otto-update`** skill teaches an agent to:
 
 1. Detect the consumer AI layout (Cursor / Claude Code / …), or **ask** if unknown
 2. Download the latest `v*` tag from this repo (or `main`)
-3. Three-way-merge using `pack/skills/otto-update/manifest.json` hashes:
+3. **Phase A (required):** update only `skills/otto-update/`, then **stop** and re-read the new `SKILL.md` (so structural/protocol changes apply before the rest)
+4. **Phase B:** three-way-merge remaining owned files using `manifest.json` hashes:
    - **base** — last successful sync
    - **local** — your project (mapped paths)
    - **remote** — this repository under `pack/` (canonical keys still `AGENTS.md`, `skills/`, …)
-4. Apply only safe updates; **never** silently overwrite when you changed a file and upstream also changed it
+5. Apply only safe updates; **never** silently overwrite when you changed a file and upstream also changed it
 
 In a Cursor consumer the skill usually lives at `.cursor/skills/otto-update/` (copied from `pack/skills/otto-update/` here).
 
