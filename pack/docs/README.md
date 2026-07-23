@@ -1,11 +1,15 @@
-# Documentation
+# Documentation (maintainer reference)
 
-Seed docs shipped with **Otto**. After install they live at the consumer repo root as `docs/`.
+This tree is **not** shipped to consumers and **not** synced by `otto-update`.
 
-| Directory | Purpose | Who edits |
-|-----------|---------|-----------|
-| [`development/`](./development/) | Architecture, conventions, deploy inventory, infra ops | Otto updates governance; consumer maintains § Current state and ADRs |
-| [`specification/`](./specification/) | Spec governance + wireframe kit; per-app feature specs | Otto owns README / wireframes.md / `_wireframe/`; **consumer owns** `specification/<app>/` |
-| [`domain-knowledge/`](./domain-knowledge/) | Business context stub | Consumer |
+It describes the **expected layout and conventions** of a consumer project’s `docs/` so Otto maintainers (and agents working in this repo) can write skills/rules that point at the right paths.
 
-Agent identity and working rules: root [`AGENTS.md`](../AGENTS.md) (from Otto). Skills live under the tool-mapped skills directory (e.g. `.cursor/skills/`).
+| Directory | What it models in a consumer |
+|-----------|------------------------------|
+| [`development/`](./development/) | Architecture, conventions, deploy inventory, infra ops, ADR folder |
+| [`specification/`](./specification/) | Spec governance, wireframe kit; per-app specs live under `<app>/` in the consumer |
+| [`domain-knowledge/`](./domain-knowledge/) | Business context stub |
+
+**Consumer reality:** the live `docs/` tree is owned and frequently edited by the user/project. Skills read/write **that** tree at runtime; this `pack/docs/` copy is only the contract sketch.
+
+Shipped Otto identity: [`../AGENTS.md`](../AGENTS.md). Skills: `../skills/`.

@@ -3,14 +3,16 @@
  * Hash Otto-owned files for otto-update manifest.
  *
  * Canonical paths (manifest.files keys — consumer-facing):
- *   AGENTS.md, skills/**, rules/**, commands/**, docs/**
+ *   AGENTS.md, skills/**, rules/**, commands/**
  *
  * Upstream Otto checkout stores those under pack/ (layout=plain).
  * Older tags may still keep them at the repo root; plain layout
  * falls back to root when pack/ is absent.
  *
  * Consumer layouts map canonical roots onto tool-specific directories
- * (e.g. Cursor → .cursor/skills). `docs/` stays at repo-root `docs/`.
+ * (e.g. Cursor → .cursor/skills).
+ *
+ * Note: pack/docs/ is maintainer reference only — not an owned root.
  *
  * Usage:
  *   node hash-owned.mjs --layout cursor
@@ -40,14 +42,12 @@ const CONSUMER_LAYOUT_MAP = {
     skills: '.cursor/skills',
     rules: '.cursor/rules',
     commands: '.cursor/commands',
-    docs: 'docs',
   },
   claude: {
     'AGENTS.md': 'AGENTS.md',
     skills: '.claude/skills',
     rules: '.claude/rules',
     commands: '.claude/commands',
-    docs: 'docs',
   },
 }
 
@@ -56,7 +56,6 @@ const PLAIN_PACK_MAP = {
   skills: 'pack/skills',
   rules: 'pack/rules',
   commands: 'pack/commands',
-  docs: 'pack/docs',
 }
 
 const PLAIN_LEGACY_MAP = {
@@ -64,7 +63,6 @@ const PLAIN_LEGACY_MAP = {
   skills: 'skills',
   rules: 'rules',
   commands: 'commands',
-  docs: 'docs',
 }
 
 function parseArgs(argv) {

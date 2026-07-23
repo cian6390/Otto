@@ -1,6 +1,6 @@
 # Development
 
-Technical docs for a t42-starter-style monorepo (Otto seed).
+Reference copy of technical docs expected in a t42-starter-style consumer monorepo. Not synced by otto-update.
 
 | Document | Description |
 |----------|-------------|

@@ -1,68 +1,50 @@
 # Repository model
 
-How **t42-starter**, **Otto**, and a combined distribution relate. Consumers use this to know what Otto may overwrite on update.
+How **t42-starter**, **Otto**, and a combined distribution relate — especially what otto-update may touch.
 
 ## Three repositories
 
 | Repository | URL | Purpose |
 |------------|-----|---------|
-| **t42-starter** | [github.com/cian6390/t42-starter](https://github.com/cian6390/t42-starter) | Monorepo skeleton — `apps/`, `packages/`, tooling |
+| **t42-starter** | [github.com/cian6390/t42-starter](https://github.com/cian6390/t42-starter) | Monorepo skeleton — `apps/`, `packages/`, tooling, **live `docs/`** |
 | **Otto** | [github.com/cian6390/Otto](https://github.com/cian6390/Otto) | Portable agent pack under `pack/` |
 | **Distribution** (e.g. t42-otto) | consumer repo | t42-starter + Otto mapped into the AI tool tree |
 
 ## Ownership map
 
-### t42-starter / consumer product owns
+### Consumer / t42-starter owns (including all of `docs/`)
 
 ```
 apps/
 packages/
-docs/specification/<app>/     # product feature specs (write-spec)
-docs/domain-knowledge/*       # beyond the seed README
-docs/development/decisions/*.md   # ADRs beyond the seed README
+docs/                         # entire tree — user updates constantly
 docker-compose.yml
 docker/
 package.json
 pnpm-workspace.yaml
-pnpm-lock.yaml
-tsconfig.json
-biome.json
-scripts/
-.secrets.example/
-.env.example
-apps/*/.env.example
+…
 ```
 
-Also consumer-maintained **facts** inside Otto-seeded files (do not expect Otto to know your project IDs):
+Otto skills **read and write** consumer `docs/` while doing product work (write-spec, deploy, …). That is normal agent work, not otto-update.
 
-- `docs/development/deployment.md` § **Current state**
-- Per-app `docs/specification/<app>/infra.md`
-
-### Otto owns (canonical under `pack/`)
+### Otto owns and syncs (`ownedRoots`)
 
 ```
 AGENTS.md
 skills/
 rules/
 commands/
-docs/                         # seed — see below
 ```
 
-Otto does **not** ship `.cursor/` or `.claude/`. Consumers map folders to their AI tool.
+### Otto keeps but does **not** sync
 
-#### What under `docs/` Otto ships
+```
+pack/docs/                    # maintainer reference for expected docs shape
+```
 
-| Path | Role |
-|------|------|
-| `docs/README.md` | Index |
-| `docs/development/**` | Tech governance (architecture, logging, deploy inventory, infra ops, …) |
-| `docs/development/decisions/README.md` | ADR naming only |
-| `docs/specification/README.md` | Spec governance |
-| `docs/specification/wireframes.md` | Wireframe governance |
-| `docs/specification/_wireframe/**` | Shared HTML/CSS/JS kit |
-| `docs/domain-knowledge/README.md` | Stub |
+Use `pack/docs/` when editing skills so path names and governance match what consumers are expected to have. Do not treat it as a seed to overwrite consumer `docs/`.
 
-Otto does **not** ship `docs/specification/<app>/` product specs. Those are created in the consumer via **write-spec** / **add-app**.
+Otto does **not** ship `.cursor/` or `.claude/`. Consumers map `skills` / `rules` / `commands` to their AI tool.
 
 ### Tool mapping (Cursor example)
 
@@ -72,19 +54,17 @@ Otto does **not** ship `docs/specification/<app>/` product specs. Those are crea
 | `skills/` | `.cursor/skills/` |
 | `rules/` | `.cursor/rules/` |
 | `commands/` | `.cursor/commands/` |
-| `docs/` | `docs/` |
-
-Claude Code: same idea with `.claude/` instead of `.cursor/` for skills/rules/commands; `docs/` and `AGENTS.md` stay at repo root.
+| `docs/` | *(not mapped — consumer already has `docs/`)* |
 
 ## Sync workflow
 
 ### Pull Otto updates
 
-Run the **otto-update** skill. It three-way-merges `ownedRoots` (including `docs/` seed files). Local-only paths (e.g. your `docs/specification/studio/`) stay. Conflicts on shared files → ask before overwrite.
+Run **otto-update**. It three-way-merges only `ownedRoots` above. **Never** modifies consumer `docs/`.
 
-### Push agent / seed-doc changes → Otto
+### Push agent changes → Otto
 
-1. Edit under `pack/` in the Otto checkout
+1. Edit under `pack/` (skills/rules/commands/AGENTS; update `pack/docs/` if the docs contract changed)
 2. Refresh hashes: `node pack/skills/otto-update/scripts/hash-owned.mjs --layout plain --write`
 3. Commit, tag `vX.Y.Z`, push
 4. In each consumer, run otto-update
