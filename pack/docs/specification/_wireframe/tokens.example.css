@@ -1,0 +1,20 @@
+/*
+ * Per-app design tokens for wireframes.
+ * Copy to docs/specification/<app-slug>/wireframes/_tokens.css
+ * and fill values from that app's design.md.
+ *
+ * Load after base.css. Only create when design.md has confirmed tokens.
+ */
+
+:root {
+  /* Example — replace with design.md values */
+  --token-background: #fbf8f4;
+  --token-surface: #ffffff;
+  --token-foreground: #3d3229;
+  --token-foreground-muted: #8a7b6f;
+  --token-primary: #e8927c;
+  --token-border: #ede6dc;
+  --token-radius-card: 16px;
+  --token-radius-pill: 999px;
+  --token-font-sans: system-ui, sans-serif;
+}

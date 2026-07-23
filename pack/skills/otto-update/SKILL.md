@@ -25,7 +25,9 @@ pack/
 
 本 skill 負責對應到 consumer，例如 Cursor → `.cursor/skills|rules|commands`，以及 consumer 根目錄 `AGENTS.md`。
 
-**不做**：改 `apps/`、`packages/`、產品規格，或任何不在 `manifest.json` → `ownedRoots` 的路徑。也不碰 Otto 上游根目錄的維護用 `AGENTS.md` / `README.md`。
+**不做**：改 `apps/`、`packages/`、或任何不在 `manifest.json` → `ownedRoots` 的路徑。也不碰 Otto 上游根目錄的維護用 `AGENTS.md` / `README.md`。
+
+`docs/` 在 owned 範圍內時：Otto 只同步**種子／治理**檔（見遠端 `pack/docs`）。Consumer 自建的 `docs/specification/<app>/` 等 local-only 路徑會 `keep`；勿把產品 feature 規格從無到有寫進 Otto 上游。
 
 ## 兩階段更新（強制）
 
@@ -73,9 +75,9 @@ Otto 的結構與同步規則會變（例如路徑搬到 `pack/`、tag 前綴改
 |------|------|
 | 遠端 | [cian6390/Otto](https://github.com/cian6390/Otto) |
 | 交付單位 | 優先 git tag（`tagPrefix`=`v`，例如 `v0.1.0`）；若無 tag → `defaultBranch`（`main`） |
-| Upstream 實體路徑 | `pack/AGENTS.md`、`pack/skills/`、`pack/rules/`、`pack/commands/` |
-| Manifest / 合併用 canonical key | 仍為 `AGENTS.md`、`skills/`、`rules/`、`commands/`（不含 `pack/` 前綴） |
-| Consumer 路徑 | 依偵測到的 **layout** 映射（見下） |
+| Upstream 實體路徑 | `pack/AGENTS.md`、`pack/skills/`、`pack/rules/`、`pack/commands/`、`pack/docs/` |
+| Manifest / 合併用 canonical key | 仍為 `AGENTS.md`、`skills/`、`rules/`、`commands/`、`docs/`（不含 `pack/` 前綴） |
+| Consumer 路徑 | 依偵測到的 **layout** 映射（見下）；`docs/` 一律對應 repo 根目錄 `docs/` |
 | 衝突 | **不得擅自選邊**；與使用者討論後再套用 |
 | 本 skill | 也在 owned 範圍內；但**每次更新必先走階段 A**，不可與其他檔混在同一次「順便套用」 |
 
@@ -85,8 +87,8 @@ Otto 的結構與同步規則會變（例如路徑搬到 `pack/`、tag 前綴改
 
 | 訊號 | layout | 映射 |
 |------|--------|------|
-| 存在 `.cursor/`（或 manifest 位於 `.cursor/skills/otto-update/`） | `cursor` | `skills`→`.cursor/skills`，`rules`→`.cursor/rules`，`commands`→`.cursor/commands`，`AGENTS.md`→`AGENTS.md` |
-| 存在 `.claude/`（或 manifest 位於 `.claude/skills/otto-update/`） | `claude` | 同上但前綴 `.claude/` |
+| 存在 `.cursor/`（或 manifest 位於 `.cursor/skills/otto-update/`） | `cursor` | `skills`→`.cursor/skills`，`rules`→`.cursor/rules`，`commands`→`.cursor/commands`，`docs`→`docs`，`AGENTS.md`→`AGENTS.md` |
+| 存在 `.claude/`（或 manifest 位於 `.claude/skills/otto-update/`） | `claude` | 同上但 skills/rules/commands 前綴 `.claude/`；`docs` 仍為 `docs/` |
 | 存在 `pack/skills/otto-update` + `pack/AGENTS.md`（Otto 上游） | `plain` | canonical → `pack/…` |
 | 根目錄即有 `skills/otto-update` + `AGENTS.md`（舊版 Otto 上游） | `plain` | 不映射（legacy） |
 

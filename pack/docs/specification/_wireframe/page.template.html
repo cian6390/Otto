@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title><!-- APP --> — <!-- FEATURE --> — <!-- STATE --></title>
+    <link rel="stylesheet" href="../../../_wireframe/base.css" />
+    <!-- styled 時： -->
+    <!-- <link rel="stylesheet" href="../_tokens.css" /> -->
+    <!-- <link rel="stylesheet" href="../_<app>.css" /> -->
+  </head>
+  <body data-fidelity="styled">
+    <div class="wf-review">
+      <header class="wf-review-header">
+        <h1><!-- FEATURE 顯示名稱 · STATE --></h1>
+        <div class="wf-review-meta">
+          <span class="wf-status wf-status--proposed">狀態：提議中</span>
+          · fidelity: <!-- sketch | structured | styled -->
+          · spec: <code><!-- feature-slug.md --></code>
+        </div>
+      </header>
+
+      <div class="wf-review-body">
+        <div class="wf-review-phone">
+          <!-- Mobile: .device-frame.wf-phone-fixed -->
+          <div class="device-frame wf-phone-fixed">
+            <!-- 可捲動區 -->
+            <div class="phone-scroll" data-wf-ref="1">
+              <!-- 產品 UI 內容；僅小圓形編號，無說明文字 -->
+            </div>
+            <!-- 固定底欄（tab、快捷列等） -->
+            <nav class="phone-chrome" data-wf-ref="2"><!-- bottom-tabs --></nav>
+          </div>
+        </div>
+
+        <aside class="wf-review-legend">
+          <h2>區塊說明</h2>
+          <p class="wf-muted">Review 時用編號指名調整。</p>
+          <ol class="wf-legend-list">
+            <li>
+              <span class="wf-legend-num">1</span>
+              <div>
+                <strong><!-- pattern-name --></strong>
+                <p><!-- 一句話說明 --></p>
+                <span class="wf-spec-ref"><!-- spec 引用 --></span>
+              </div>
+            </li>
+          </ol>
+        </aside>
+      </div>
+
+      <footer class="wf-review-footer">
+        <a class="wf-link" href="./other-state.html">其他狀態</a>
+      </footer>
+    </div>
+  </body>
+</html>

@@ -12,6 +12,7 @@ This repo is **not** a consumer of Otto. Do **not** treat root `AGENTS.md` / `sk
 | `pack/skills/` | Skills (canonical) |
 | `pack/rules/` | Rules / gates (canonical) |
 | `pack/commands/` | Slash-style commands (canonical) |
+| `pack/docs/` | Seed docs shipped to consumer `docs/` (governance + templates; not product specs) |
 | Root `AGENTS.md` | **This file** — maintainer context only (not shipped) |
 | `README.md` | Install / update / layout docs for humans |
 
